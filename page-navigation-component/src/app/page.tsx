@@ -1,103 +1,359 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useEffect, useRef, useState } from "react";
+
+const initialButtons = [
+  { id: "info", label: "Info" },
+  { id: "details", label: "Details" },
+  { id: "other", label: "Other" },
+  { id: "ending", label: "Ending" },
+];
+
+const content: Record<string, string> = {
+  info: "This is the Info section content.",
+  details: "This is the Details section content.",
+  other: "This is the Other section content.",
+  ending: "This is the Ending section content.",
+};
+
+export default function PageNavigation() {
+  const [active, setActive] = useState("info");
+  const [buttons, setButtons] = useState(initialButtons);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [openPanelId, setOpenPanelId] = useState<string | null>(null);
+  const [focused, setFocused] = useState<string | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  const panelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setOpenPanelId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const onDragStart = (id: string) => {
+    setDraggingId(id);
+  };
+
+  const onDrop = (targetId: string) => {
+    if (!draggingId || draggingId === targetId) return;
+    const draggingIndex = buttons.findIndex((btn) => btn.id === draggingId);
+    const targetIndex = buttons.findIndex((btn) => btn.id === targetId);
+
+    const newButtons = [...buttons];
+    const [moved] = newButtons.splice(draggingIndex, 1);
+    newButtons.splice(targetIndex, 0, moved);
+
+    setButtons(newButtons);
+    setDraggingId(null);
+  };
+
+  const addPageBetween = (index: number) => {
+    const newPage = {
+      id: `new-${Date.now()}`,
+      label: "New Page",
+    };
+    const newButtons = [...buttons];
+    newButtons.splice(index + 1, 0, newPage);
+    setButtons(newButtons);
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="flex flex-col min-h-screen bg-gray-100 text-gray-800">
+      {/* Header */}
+      <header className="bg-white shadow-md p-4">
+        <h1 className="text-2xl text-[#fec83a] font-bold">Fillout - Design as you please</h1>
+      </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+      {/* Main Section */}
+      <main className="flex-grow p-6">
+        <section className="bg-white p-10 rounded shadow">
+          <h2 className="text-xl font-semibold mb-2">
+            {buttons.find((b) => b.id === active)?.label}
+          </h2>
+          <p>{content[active]}</p>
+        </section>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      {/* Footer */}
+      <footer className="bg-white p-6 shadow">
+        <div className="flex gap-2 flex-wrap items-center">
+          {buttons.map((btn, index) => (
+            <div
+              key={btn.id}
+              draggable
+              onDragStart={() => onDragStart(btn.id)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => onDrop(btn.id)}
+              className="relative flex items-center"
+              onMouseEnter={() => setHoveredIndex(index)}
+              onMouseLeave={() => setHoveredIndex(null)}
+            >
+              {/* Button */}
+              <div className="relative">
+                <button
+                  onClick={() => setActive(btn.id)}
+                  onFocus={() => setFocused(btn.id)}
+                  onBlur={() => setFocused(null)}
+                  className={`flex items-center gap-2 px-[10px] py-[5px] rounded-[8px] text-sm transition relative
+                  ${active === btn.id
+                      ? "bg-white border border-[#E1E1E1] shadow-[0_1px_3px_0px_#0000000A,0_1px_1px_0px_#00000005]"
+                      : "bg-[#9DA4B226] border border-transparent hover:bg-[#9DA4B259]"}
+                  ${focused === btn.id ? "border border-[#2F72E2]" : ""}`}
+                  style={{
+                    fontFamily: "BL Melody",
+                    fontWeight: 500,
+                    fontSize: "16px",
+                    lineHeight: "24px",
+                    letterSpacing: "-0.015em",
+                    verticalAlign: "middle",
+                  }}
+                >
+                  <img
+                    src={active === btn.id ? "/file.png" : "/file-grey.png"}
+                    alt="icon"
+                    className="w-5 h-5"
+                  />
+                  <span>{btn.label}</span>
+
+                  {active === btn.id && (
+                    <img
+                      src="/verticalDots.png"
+                      alt="menu icon"
+                      className="w-4 h-4 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenPanelId(openPanelId === btn.id ? null : btn.id);
+                      }}
+                    />
+                  )}
+                </button>
+
+                {/* Settings Panel */}
+                {openPanelId === btn.id && (
+                  <div
+                    ref={panelRef}
+                    className="absolute bottom-full mb-2 right-0 rounded-[12px] w-[240px] bg-white border border-gray-200 shadow-md z-10"
+                  >
+                    <div className="px-4 pt-3 pb-2 text-gray-800 font-semibold">
+                      Settings
+                    </div>
+                    <div className="border-t border-gray-200 mb-1" />
+                    <ul className="font-medium text-base leading-6 align-middle tracking-tight text-gray-700">
+                      <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                        <img src="/flag.png" alt="Rename" className="w-4 h-4" />
+                        <span>Set as first page</span>
+                      </li>
+                      <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                        <img src="/pencil.png" alt="Rename" className="w-4 h-4" />
+                        <span>Rename</span>
+                      </li>
+                      <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                        <img src="/clipboard.png" alt="Copy" className="w-4 h-4" />
+                        <span>Copy</span>
+                      </li>
+                      <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                        <img src="/copy.png" alt="Duplicate" className="w-4 h-4" />
+                        <span>Duplicate</span>
+                      </li>
+                      <li className="border-t border-gray-200 my-1" />
+                      <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                        <img src="/delete.png" alt="Delete" className="w-4 h-4" />
+                        <span className="text-red-500">Delete</span>
+                      </li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              {/* + Add Button */}
+              {hoveredIndex === index && index < buttons.length - 1 && (
+                <button
+                  className="mx-2 w-6 h-6 rounded-full bg-white text-gray-500 border border-gray-300 hover:bg-gray-200 shadow text-sm flex items-center justify-center"
+                  onClick={() => addPageBetween(index)}
+                >
+                  +
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
       </footer>
     </div>
   );
 }
+
+// "use client";
+
+// import { useEffect, useRef, useState } from "react";
+
+// const initialButtons = [
+//   { id: "info", label: "Info" },
+//   { id: "details", label: "Details" },
+//   { id: "other", label: "Other" },
+//   { id: "ending", label: "Ending" },
+// ];
+
+// const content: Record<string, string> = {
+//   info: "This is the Info section content.",
+//   details: "This is the Details section content.",
+//   other: "This is the Other section content.",
+//   ending: "This is the Ending section content.",
+// };
+
+// export default function PageNavigation() {
+//   const [active, setActive] = useState("info");
+//   const [buttons, setButtons] = useState(initialButtons);
+//   const [draggingId, setDraggingId] = useState<string | null>(null);
+//   const [openPanelId, setOpenPanelId] = useState<string | null>(null);
+//   const [focused, setFocused] = useState<string | null>(null);
+
+
+//   const panelRef = useRef<HTMLDivElement | null>(null);
+
+//   // Close panel on outside click
+//   useEffect(() => {
+//     const handleClickOutside = (e: MouseEvent) => {
+//       if (
+//         panelRef.current &&
+//         !panelRef.current.contains(e.target as Node)
+//       ) {
+//         setOpenPanelId(null);
+//       }
+//     };
+//     document.addEventListener("mousedown", handleClickOutside);
+//     return () => document.removeEventListener("mousedown", handleClickOutside);
+//   }, []);
+
+//   const onDragStart = (id: string) => {
+//     setDraggingId(id);
+//   };
+
+//   const onDrop = (targetId: string) => {
+//     if (!draggingId || draggingId === targetId) return;
+//     const draggingIndex = buttons.findIndex((btn) => btn.id === draggingId);
+//     const targetIndex = buttons.findIndex((btn) => btn.id === targetId);
+
+//     const newButtons = [...buttons];
+//     const [moved] = newButtons.splice(draggingIndex, 1);
+//     newButtons.splice(targetIndex, 0, moved);
+
+//     setButtons(newButtons);
+//     setDraggingId(null);
+//   };
+
+//   return (
+//     <div className="flex flex-col min-h-screen bg-gray-100 text-gray-800">
+//       {/* Header */}
+//       <header className="bg-white shadow-md p-4">
+//         <h1 className="text-2xl font-bold">Fillout - Design as you please</h1>
+//       </header>
+
+//       {/* Main Section */}
+//       <main className="flex-grow p-6">
+//         <section className="bg-white p-10 rounded shadow">
+//           <h2 className="text-xl font-semibold mb-2">
+//             {buttons.find((b) => b.id === active)?.label}
+//           </h2>
+//           <p>{content[active]}</p>
+//         </section>
+//       </main>
+
+//       {/* Footer */}
+//       <footer className="bg-white p-6 shadow">
+//         <div className="flex gap-4 flex-wrap">
+//           {buttons.map((btn) => (
+//             <div
+//               key={btn.id}
+//               draggable
+//               onDragStart={() => onDragStart(btn.id)}
+//               onDragOver={(e) => e.preventDefault()}
+//               onDrop={() => onDrop(btn.id)}
+//               className="relative"
+//             >
+//              <button
+//               onClick={() => setActive(btn.id)}
+//               onFocus={() => setFocused(btn.id)}
+//               onBlur={() => setFocused(null)}
+//               className={`flex items-center gap-2 px-[10px] py-[5px] rounded-[8px] text-sm transition relative
+//                 ${active === btn.id
+//                   ? "bg-white border border-[#E1E1E1] shadow-[0_1px_3px_0px_#0000000A,0_1px_1px_0px_#00000005]"
+//                   : "bg-[#9DA4B226] border border-transparent hover:bg-[#9DA4B259]"}
+//                 ${focused === btn.id ? "border border-[#2F72E2]" : ""}`}
+//             >
+//               <img
+//                 src={active === btn.id ? "/file.png" : "/file-grey.png"}
+//                 alt="icon"
+//                 className="w-5 h-5"
+//               />
+//               <span>{btn.label}</span>
+
+//               {active === btn.id && (
+//                 <img
+//                   src="/verticalDots.png"
+//                   alt="menu icon"
+//                   className="w-4 h-4 cursor-pointer"
+//                   onClick={(e) => {
+//                     e.stopPropagation();
+//                     setOpenPanelId(openPanelId === btn.id ? null : btn.id);
+//                   }}
+//                 />
+//               )}
+// </button>
+
+
+//               {/* Panel */}
+//               {openPanelId === btn.id && (
+//                 <div
+//   ref={panelRef}
+//   className="absolute bottom-full mb-2 right-0 rounded-[12px] w-[240px] bg-white border border-gray-200 shadow-md z-10"
+// >
+//   {/* Title */}
+//   <div className="px-4 pt-3 pb-2 text-gray-80 font-16 font-weight-500 font-semibold">
+//     Settings
+//   </div>
+
+//   {/* Divider after title */}
+//   <div className="border-t border-gray-200 mb-1" />
+
+//   {/* Options */}
+//   <ul className="font-medium text-base leading-6 align-middle tracking-tight text-gray-700">
+//     <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer">
+//       <img src="/flag.png" alt="Rename" className="w-4 h-4" />
+//       <span>Set as first page</span>
+//     </li>
+//     <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer">
+//       <img src="/pencil.png" alt="Duplicate" className="w-4 h-4" />
+//       <span>Rename</span>
+//     </li>
+//     <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer">
+//       <img src="/clipboard.png" alt="Move" className="w-4 h-4" />
+//       <span>Copy</span>
+//     </li>
+//      <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer">
+//       <img src="/copy.png" alt="Move" className="w-4 h-4" />
+//       <span>Duplicate</span>
+//     </li>           
+//     {/* Divider before Delete */}
+//     <li className="border-t border-gray-200 my-1" />
+
+//     <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer">
+//       <img src="/delete.png" alt="Delete" className="w-4 h-4" />
+//       <span className="text-red-500">Delete</span>
+//     </li>
+//   </ul>
+// </div>
+
+//               )}
+//             </div>
+//           ))}
+//         </div>
+//       </footer>
+//     </div>
+//   );
+// }

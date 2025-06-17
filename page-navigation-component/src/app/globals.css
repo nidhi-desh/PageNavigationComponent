@@ -8,19 +8,28 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --font-inter: var(--font-inter);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #ededed;
+    --foreground: #000000;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Inter;
+}
+
+/* Strong override to hide Next.js development indicator */
+#__next-build-watcher,
+[data-nextjs-scroll-focus-boundary] + div[style*="bottom: 1rem"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
 }
