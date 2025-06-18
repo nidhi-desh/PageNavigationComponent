@@ -144,7 +144,7 @@ export default function PageNavigation() {
                 {openPanelId === btn.id && (
                   <div
                     ref={panelRef}
-                    className="absolute bottom-full mb-2 right-0 rounded-[12px] w-[240px] bg-white border border-gray-200 shadow-md z-10"
+                    className="absolute bottom-full mb-2 rounded-[12px] w-[240px] bg-white border border-gray-200 shadow-md z-10"
                   >
                     <div className="px-4 pt-3 pb-2 text-gray-800 font-semibold">
                       Settings
